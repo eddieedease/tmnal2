@@ -1,0 +1,46 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.boot-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 0.5rem;
+}
+
+.boot-line {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--t-primary);
+  text-shadow: 0 0 4px var(--t-primary);
+  white-space: pre;
+  animation: appear 0.05s ease-in;
+}
+
+@keyframes appear {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.boot-cursor {
+  color: var(--t-primary);
+  font-size: 0.82rem;
+  display: inline-block;
+  margin-top: 2px;
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}

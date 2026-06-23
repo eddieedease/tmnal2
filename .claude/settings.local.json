@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ng version *)",
+      "Bash(ng new *)",
+      "Bash(npm install *)",
+      "Bash(ng serve *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4200)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(ng build *)",
+      "Bash(pkill -f \"ng serve\")",
+      "Bash(pkill -f \"angular\")"
+    ]
+  }
+}

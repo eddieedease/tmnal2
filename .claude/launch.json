@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tmnal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start"],
+      "port": 4200,
+      "autoPort": false,
+      "cwd": "/Users/edease/Sites/localhost/tmnal/tmnal"
+    }
+  ]
+}

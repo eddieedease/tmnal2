@@ -1,0 +1,30 @@
+<div class="terminal-output" #outputEl>
+  @for (line of svc.lines(); track line.id) {
+    <div [class]="'line line--' + line.type">{{ line.text }}</div>
+  }
+
+  @if (svc.isProcessing()) {
+    <div class="line line--processing">
+      <span>Processing</span>
+      <span class="dots">
+        <span>.</span><span>.</span><span>.</span>
+      </span>
+    </div>
+  }
+</div>
+
+<div class="terminal-input-row" (click)="focusInput()">
+  <span class="prompt">>&nbsp;</span>
+  <input
+    #inputEl
+    type="text"
+    class="terminal-input"
+    [value]="inputValue()"
+    (input)="inputValue.set($any($event.target).value)"
+    (keydown)="onKeydown($event)"
+    [disabled]="svc.isProcessing()"
+    autocomplete="off"
+    spellcheck="false"
+    autofocus
+  />
+</div>

@@ -1,0 +1,29 @@
+<div class="scene">
+  <div class="monitor">
+
+    <div class="screen scanlines" [class.screen--off]="screenState() === 'off'" [class.screen--powering-off]="screenState() === 'powering-off'">
+
+      <button class="power-led" [class.power-led--off]="!isPowered" (click)="togglePower()" title="Power"></button>
+
+      <div class="crt-inner" [class.crt-inner--off]="screenState() === 'off'" [class.crt-inner--powering-off]="screenState() === 'powering-off'" [attr.style]="themeStyle()">
+
+        @if (screenState() !== 'off') {
+          <div class="status-bar">
+            <span>{{ persona.current().label }}</span>
+            <span>{{ currentTime() }}</span>
+          </div>
+
+          @if (screenState() === 'booting') {
+            <app-boot [lines]="bootLines()" (done)="onBootDone()" />
+          } @else if (screenState() === 'on') {
+            <app-terminal />
+          }
+        }
+
+      </div>
+    </div>
+
+    <div class="stand-neck"></div>
+    <div class="stand-base"></div>
+  </div>
+</div>
