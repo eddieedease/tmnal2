@@ -1,0 +1,102 @@
+@let result = profile.lastResult();
+@let t = langSvc.t;
+@if (result) {
+<div class="result-panel" id="print-target">
+
+  <div class="result-header">
+    <div class="result-title">{{ t.resultHeader }}</div>
+    <div class="result-date">{{ today() }}</div>
+  </div>
+
+  <div class="role-badges">
+    <div class="role-badge role-badge--primary">
+      <div class="badge-label">{{ t.primaryRole }}</div>
+      <div class="badge-name">{{ t.roles[result.primary.role.key].name }}</div>
+      <div class="badge-sublabel">{{ t.roles[result.primary.role.key].label }}</div>
+      <div class="badge-score">{{ result.primary.pct }}%</div>
+    </div>
+    <div class="role-badge role-badge--secondary">
+      <div class="badge-label">{{ t.secondaryRole }}</div>
+      <div class="badge-name">{{ t.roles[result.secondary.role.key].name }}</div>
+      <div class="badge-sublabel">{{ t.roles[result.secondary.role.key].label }}</div>
+      <div class="badge-score">{{ result.secondary.pct }}%</div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <div class="chart-title">{{ t.roleDist }}</div>
+    @for (rs of result.all; track rs.role.key) {
+      <div class="chart-row">
+        <div class="chart-label">{{ t.roles[rs.role.key].name }}</div>
+        <div class="chart-bar-track">
+          <div class="chart-bar" [style.width.%]="rs.pct"
+               [class.chart-bar--primary]="rs.role.key === result.primary.role.key"
+               [class.chart-bar--secondary]="rs.role.key === result.secondary.role.key">
+          </div>
+        </div>
+        <div class="chart-pct">{{ rs.pct }}%</div>
+      </div>
+    }
+  </div>
+
+  <div class="desc-section">
+    <div class="desc-title">{{ t.roles[result.primary.role.key].label }}</div>
+    <p class="desc-text">{{ t.roles[result.primary.role.key].description }}</p>
+    <div class="desc-row">
+      <div class="desc-block">
+        <div class="desc-block-title">{{ t.coreStrengths }}</div>
+        @for (s of t.roles[result.primary.role.key].strengths; track s) {
+          <div class="desc-item">▸ {{ s }}</div>
+        }
+      </div>
+      <div class="desc-block">
+        <div class="desc-block-title">{{ t.teamValue }}</div>
+        <div class="desc-item">{{ t.roles[result.primary.role.key].teamValue }}</div>
+        <div class="desc-block-title" style="margin-top:0.75rem">{{ t.allowableWeakness }}</div>
+        <div class="desc-item desc-item--dim">{{ t.roles[result.primary.role.key].allowable }}</div>
+      </div>
+    </div>
+  </div>
+
+  @if (hasOpenAnswers(result.openAnswers)) {
+    <div class="open-section">
+      <div class="desc-title">{{ t.personalisedNotes }}</div>
+      @if (result.openAnswers['A']) {
+        <div class="open-item">
+          <div class="open-label">{{ t.openLabels[0] }}</div>
+          <div class="open-quote">"{{ result.openAnswers['A'] }}"</div>
+        </div>
+      }
+      @if (result.openAnswers['B']) {
+        <div class="open-item">
+          <div class="open-label">{{ t.openLabels[1] }}</div>
+          <div class="open-quote">"{{ result.openAnswers['B'] }}"</div>
+        </div>
+      }
+      @if (result.openAnswers['C']) {
+        <div class="open-item">
+          <div class="open-label">{{ t.openLabels[2] }}</div>
+          <div class="open-quote">"{{ result.openAnswers['C'] }}"</div>
+        </div>
+      }
+      @if (result.openAnswers['D']) {
+        <div class="open-item">
+          <div class="open-label">{{ t.openLabels[3] }}</div>
+          <div class="open-quote">"{{ result.openAnswers['D'] }}"</div>
+        </div>
+      }
+      @if (result.openAnswers['E']) {
+        <div class="open-item">
+          <div class="open-label">{{ t.openLabels[4] }}</div>
+          <div class="open-quote">"{{ result.openAnswers['E'] }}"</div>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="print-row no-print">
+    <button class="print-btn" (click)="printPdf()">{{ t.printBtn }}</button>
+  </div>
+
+</div>
+}

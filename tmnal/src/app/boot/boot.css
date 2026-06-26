@@ -16,7 +16,7 @@
 
 .boot-line {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   line-height: 1.7;
   color: var(--t-primary);
   text-shadow: 0 0 4px var(--t-primary);
@@ -31,7 +31,7 @@
 
 .boot-cursor {
   color: var(--t-primary);
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   display: inline-block;
   margin-top: 2px;
 }

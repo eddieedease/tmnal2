@@ -48,7 +48,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   protected onBootDone(): void {
-    this.terminalSvc.init();
+    this.terminalSvc.startLanguageSelect();
     this.screenState.set('on');
   }
 

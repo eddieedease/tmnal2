@@ -8,14 +8,19 @@
   box-sizing: border-box;
 }
 
+html {
+  background: #0a0a0a;
+}
+
 body {
   margin: 0;
-  background: #1a1a1a;
+  background: #0a0a0a;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
 }
 
 /* Scanline overlay */
@@ -49,6 +54,20 @@ body {
 }
 .cursor-blink {
   animation: blink 1s step-end infinite;
+}
+
+/* Print: show only the result panel */
+@media print {
+  body * { visibility: hidden; }
+  app-profile-result,
+  app-profile-result * { visibility: visible; }
+  app-profile-result {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #fff !important;
+  }
 }
 
 /* Screen flicker */

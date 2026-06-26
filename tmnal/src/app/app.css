@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: radial-gradient(ellipse at center, #2a2a2a 0%, #0e0e0e 100%);
+  background: #0a0f0a;
   padding: 2rem;
 }
 
@@ -17,8 +17,8 @@
 /* ── Bezel ── */
 .screen {
   position: relative;
-  width: min(820px, 90vw);
-  height: min(560px, 65vh);
+  width: min(960px, 94vw);
+  height: min(640px, 74vh);
   background: #111;
   border-radius: 18px;
   padding: 18px;

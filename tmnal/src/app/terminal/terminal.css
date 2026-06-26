@@ -19,8 +19,8 @@
 
 .line {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 0.85rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -38,6 +38,25 @@
 .line--output {
   color: var(--t-primary);
   text-shadow: 0 0 4px var(--t-primary), 0 0 8px color-mix(in srgb, var(--t-primary) 30%, transparent);
+}
+
+.line--header {
+  color: #ffffff;
+  text-shadow: 0 0 6px rgba(255,255,255,0.4);
+  letter-spacing: 0.04em;
+}
+
+.line--question {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.5);
+  font-weight: bold;
+  margin-top: 0.2rem;
+}
+
+.line--meta {
+  color: var(--t-dim);
+  font-style: italic;
+  opacity: 0.9;
 }
 
 .line--processing {
@@ -58,6 +77,16 @@
   50%       { opacity: 1; }
 }
 
+.assessment-badge {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.7rem;
+  color: var(--t-bg);
+  background: var(--t-dim);
+  padding: 2px 12px;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
 .terminal-input-row {
   display: flex;
   align-items: center;
@@ -69,7 +98,7 @@
 .prompt {
   color: var(--t-primary);
   font-family: 'Courier New', Courier, monospace;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   text-shadow: 0 0 4px var(--t-primary);
   flex-shrink: 0;
 }
@@ -81,7 +110,7 @@
   outline: none;
   color: #ffffff;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   caret-color: var(--t-primary);
 }
 

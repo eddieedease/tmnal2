@@ -11,7 +11,15 @@
       </span>
     </div>
   }
+
+  @if (profile.state() === 'done') {
+    <app-profile-result #resultEl />
+  }
 </div>
+
+@if (profile.isActive()) {
+  <div class="assessment-badge">ASSESSMENT IN PROGRESS — type CANCEL to abort</div>
+}
 
 <div class="terminal-input-row" (click)="focusInput()">
   <span class="prompt">>&nbsp;</span>

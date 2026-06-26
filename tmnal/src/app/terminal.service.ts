@@ -1,45 +1,62 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { PersonaService, PERSONAS } from './services/persona.service';
+import { PersonaService } from './services/persona.service';
 import { FilesystemService } from './services/filesystem.service';
+import { ProfileService } from './services/profile.service';
+import { LanguageService } from './services/language.service';
 
 export interface TerminalLine {
-  type: 'input' | 'output' | 'system';
+  type: 'input' | 'output' | 'system' | 'header' | 'question' | 'meta';
   text: string;
   id: number;
 }
 
-const CONVERSATIONAL: [RegExp, () => string][] = [
-  [/^(hello|hi|hey)\b/i,       () => 'Hello, user. Connection established.'],
-  [/how are you/i,              () => 'All systems nominal. Ready to process your requests.'],
-  [/what.*your name|who are you/i, () => 'I am TMNAL — Terminal Machine Natural Artificial Language interface.'],
-  [/\b(bye|goodbye)\b/i,       () => 'Session termination acknowledged. Goodbye.'],
-  [/thank/i,                   () => 'Acknowledged. Standing by.'],
-  [/weather/i,                 () => 'Unable to reach weather satellite. Check your antenna array.'],
-  [/joke/i,                    () => 'Why do programmers prefer dark mode? Because light attracts bugs.'],
-  [/meaning of life/i,         () => 'Processing... 42. Query resolved.'],
-  [/\btime\b/i,                () => `System clock: ${new Date().toLocaleTimeString()}`],
-];
+type InternalState = 'lang-select' | 'ready';
 
 @Injectable({ providedIn: 'root' })
 export class TerminalService {
   private persona = inject(PersonaService);
   private fs = inject(FilesystemService);
+  private profile = inject(ProfileService);
+  private langSvc = inject(LanguageService);
 
   private _lines = signal<TerminalLine[]>([]);
   private _isProcessing = signal(false);
   private _requestBoot = signal(0);
   private _counter = 0;
+  private _internalState: InternalState = 'lang-select';
 
   readonly lines = this._lines.asReadonly();
   readonly isProcessing = this._isProcessing.asReadonly();
   readonly requestBoot = this._requestBoot.asReadonly();
 
-  init(): void {
+  /** Called after boot animation — shows language selection first */
+  startLanguageSelect(): void {
     this._lines.set([]);
     this._counter = 0;
-    const greeting = this.persona.current().greeting;
-    this._addLine({ type: 'system', text: greeting, id: this._counter++ });
-    this._addLine({ type: 'system', text: `Type HELP for available commands.  PWD: ${this.fs.pwd()}`, id: this._counter++ });
+    this._internalState = 'lang-select';
+    const t = this.langSvc.t;
+    this._addLines([
+      { type: 'header', text: '══════════════════════════════════════' },
+      { type: 'header', text: `  ${t.langSelectHeader}` },
+      { type: 'header', text: '══════════════════════════════════════' },
+      { type: 'output', text: '' },
+      { type: 'question', text: t.langOption1 },
+      { type: 'question', text: t.langOption2 },
+      { type: 'output', text: '' },
+      { type: 'meta', text: t.langSelectPrompt },
+    ]);
+  }
+
+  /** Called after language is chosen (or on persona re-boot) */
+  init(): void {
+    this._internalState = 'ready';
+    this._lines.set([]);
+    this._counter = 0;
+    const t = this.langSvc.t;
+    this._addLines([
+      { type: 'system', text: t.personaGreetings[this.persona.current().id] ?? this.persona.current().greeting },
+      { type: 'system', text: t.startHint },
+    ]);
   }
 
   process(input: string): void {
@@ -49,28 +66,60 @@ export class TerminalService {
     this._addLine({ type: 'input', text: `> ${trimmed}`, id: this._counter++ });
     this._isProcessing.set(true);
 
-    const delay = 300 + Math.random() * 400;
-    setTimeout(() => {
-      const result = this._handle(trimmed);
+    if (this._internalState === 'lang-select') {
+      setTimeout(() => {
+        this._handleLangSelect(trimmed);
+        this._isProcessing.set(false);
+      }, 200);
+      return;
+    }
 
-      if (result === '__CLEAR__') {
-        this._lines.set([]);
-      } else if (result === '__BOOT__') {
-        // handled by app
+    const delay = this.profile.isActive() ? 120 : 300 + Math.random() * 400;
+    setTimeout(() => {
+      if (this.profile.isActive()) {
+        this._handleProfile(trimmed);
       } else {
-        for (const line of result.split('\n')) {
-          this._addLine({ type: 'output', text: line, id: this._counter++ });
+        const result = this._handle(trimmed);
+        if (result === '__TYPED__') {
+          // already done
+        } else if (result === '__CLEAR__') {
+          this._lines.set([]);
+        } else if (result === '__BOOT__') {
+          // handled by app via requestBoot signal
+        } else if (result === '__PROFILE_START__') {
+          for (const tl of this.profile.start(this.langSvc.t)) {
+            this._addLine({ type: tl.type, text: tl.text, id: this._counter++ });
+          }
+        } else {
+          for (const line of result.split('\n')) {
+            this._addLine({ type: 'output', text: line, id: this._counter++ });
+          }
         }
       }
       this._isProcessing.set(false);
     }, delay);
   }
 
-  private _addLine(line: TerminalLine): void {
-    this._lines.update(prev => [...prev, line]);
+  private _handleLangSelect(input: string): void {
+    const t = this.langSvc.t;
+    const v = input.trim().toUpperCase();
+    if (v === '1' || v === 'EN' || v === 'ENGLISH') {
+      this.langSvc.set('en');
+    } else if (v === '2' || v === 'NL' || v === 'NEDERLANDS') {
+      this.langSvc.set('nl');
+    } else {
+      this._addLines([
+        { type: 'meta', text: t.langInvalid },
+        { type: 'meta', text: t.langSelectPrompt },
+      ]);
+      return;
+    }
+    this._addLine({ type: 'meta', text: this.langSvc.t.langConfirmed, id: this._counter++ });
+    setTimeout(() => this.init(), 400);
   }
 
   private _handle(input: string): string {
+    const t = this.langSvc.t;
     const parts = input.trim().split(/\s+/);
     const cmd = parts[0].toUpperCase();
     const arg = parts.slice(1).join(' ');
@@ -79,33 +128,28 @@ export class TerminalService {
     switch (cmd) {
       case 'HELP':
         return [
-          'AVAILABLE COMMANDS',
+          t.helpTitle,
           '──────────────────────────────────────',
-          '  HELP              show this message',
-          '  CLEAR             clear the screen',
-          '  DATE              current timestamp',
-          '  WHOAMI            your identity',
-          '  ECHO <text>       echo text back',
+          ...t.helpCommands,
           '',
-          'FILESYSTEM',
-          '  PWD               print working directory',
-          `  LS [-A]           list directory (use -A for hidden)`,
-          '  CD <path>         change directory  (.. / ~ supported)',
-          '  CAT <file>        read file contents',
+          t.helpFS,
+          ...t.helpFSCmds,
           '',
-          'PERSONAS',
-          '  PERSONAS          list available personas',
-          '  BOOT <name>       switch to persona: ghost | atlas | sysop',
+          t.helpPersonas,
+          ...t.helpPersonasCmds,
+          '',
+          t.helpAssessment,
+          ...t.helpAssessmentCmds,
         ].join('\n');
 
       case 'CLEAR':
         return '__CLEAR__';
 
       case 'DATE':
-        return `Current timestamp: ${new Date().toISOString()}`;
+        return `${new Date().toISOString()}`;
 
       case 'WHOAMI':
-        return `Identity: GUEST\nPersona: ${this.persona.current().name}\nAccess level: STANDARD\nLocation: ${this.fs.pwd()}`;
+        return t.whoamiResponse(this.persona.current().name, this.fs.pwd());
 
       case 'ECHO':
         return arg || '(nothing to echo)';
@@ -114,13 +158,12 @@ export class TerminalService {
         return this.fs.pwd();
 
       case 'LS': {
-        const showHidden = flag === '-A';
-        return this.fs.ls(showHidden);
+        return this.fs.ls(flag === '-A');
       }
 
       case 'CD': {
         const err = this.fs.cd(arg || '~');
-        return err ?? `${this.fs.pwd()}`;
+        return err ?? this.fs.pwd();
       }
 
       case 'CAT': {
@@ -145,12 +188,29 @@ export class TerminalService {
         return '__BOOT__';
       }
 
+      case 'START':
+        return '__PROFILE_START__';
+
       default: {
-        for (const [pattern, reply] of CONVERSATIONAL) {
-          if (pattern.test(input)) return reply();
-        }
         return this.persona.current().unknownResponse(input);
       }
+    }
+  }
+
+  private _handleProfile(input: string): void {
+    const { lines } = this.profile.submit(input, this.langSvc.t);
+    for (const tl of lines) {
+      this._addLine({ type: tl.type, text: tl.text, id: this._counter++ });
+    }
+  }
+
+  private _addLine(line: TerminalLine): void {
+    this._lines.update(prev => [...prev, line]);
+  }
+
+  private _addLines(items: Omit<TerminalLine, 'id'>[]): void {
+    for (const item of items) {
+      this._addLine({ ...item, id: this._counter++ });
     }
   }
 }
